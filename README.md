@@ -5,4 +5,4 @@ Libraries: org.json, JUnit4
 
 Windows-style paths
 
-Best seen with Full HD resolution
+Full HD resolution suggested
