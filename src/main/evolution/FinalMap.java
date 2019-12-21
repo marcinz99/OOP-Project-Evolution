@@ -1,7 +1,5 @@
 package evolution;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Random;
+import java.util.*;
 
 public class FinalMap extends AbstractWorldMap {
     private Simulation sim;
@@ -102,7 +100,6 @@ public class FinalMap extends AbstractWorldMap {
             if(to.follows(jungleBottomLeft) && to.precedes(jungleUpperRight)){
                 freeSpacesInJungle.add(to);
             } else freeSpacesOutOfJungle.add(to);
-            //plants[to.x][to.y] = false;
             numberOfPlants--;
         }
         if(from.follows(jungleBottomLeft) && from.precedes(jungleUpperRight)){
@@ -163,9 +160,15 @@ public class FinalMap extends AbstractWorldMap {
     }
     private Vector2d getPositionOfBirth(int x, int y){
         int[][] moves = {{1,1},{1,0},{1,-1},{0,1},{0,-1},{-1,1},{-1,0},{-1,-1}};
-        Vector2d vec;
+        ArrayList<int[]> movesList = new ArrayList<>();
         for(int i=0; i<8; i++){
-            vec = normalizePosition(new Vector2d(x + moves[i][0], y + moves[i][1]));
+            movesList.add(moves[i]);
+        }
+        Collections.shuffle(movesList);
+
+        Vector2d vec;
+        for(int[] get : movesList){
+            vec = normalizePosition(new Vector2d(x + get[0], y + get[1]));
             if(freeSpacesInJungle.isFree(vec)) return vec;
             if(freeSpacesOutOfJungle.isFree(vec)) return vec;
         }
