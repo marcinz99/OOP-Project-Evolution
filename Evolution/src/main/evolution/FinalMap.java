@@ -1,4 +1,5 @@
 package evolution;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Random;
 
@@ -144,6 +145,20 @@ public class FinalMap extends AbstractWorldMap {
     public int getMoveCost(){
         return moveCost;
     }
+    public float getAverageFertility(){
+        int totalFertility = 0;
+        for(Animal animal : animals){
+            totalFertility += animal.getJuvenileNum();
+        }
+        return (float) totalFertility / animals.size();
+    }
+    public float getAverageStamina(){
+        int totalStamina = 0;
+        for(Animal animal : animals){
+            totalStamina += animal.getStamina();
+        }
+        return (float) totalStamina / animals.size();
+    }
     private Vector2d getPositionOfBirth(int x, int y){
         int[][] moves = {{1,1},{1,0},{1,-1},{0,1},{0,-1},{-1,1},{-1,0},{-1,-1}};
         Vector2d vec;
@@ -183,5 +198,51 @@ public class FinalMap extends AbstractWorldMap {
         if (pos.follows(jungleBottomLeft) && pos.precedes(jungleUpperRight)) {
             freeSpacesInJungle.delete(pos);
         } else freeSpacesOutOfJungle.delete(pos);
+    }
+    public long getMostCommonGenome(){
+        HashMap<Long, Integer> genomeHashMap = new HashMap<>();
+        for(Animal animal : animals){
+            long hashedGenome = animal.getGenes().hashed();
+            if(genomeHashMap.containsKey(hashedGenome)){
+                int occurences = genomeHashMap.remove(hashedGenome);
+                genomeHashMap.put(hashedGenome, occurences+1);
+            }
+            else{
+                genomeHashMap.put(hashedGenome, 1);
+            }
+        }
+        int maxOccurrences = 0;
+        long mostCommonGenomeHashed = 0;
+        for(Long hashedGenome : genomeHashMap.keySet()){
+            int occ = genomeHashMap.get(hashedGenome);
+            if(occ > maxOccurrences){
+                mostCommonGenomeHashed = hashedGenome;
+            }
+        }
+        return mostCommonGenomeHashed;
+    }
+    public String getMostCommonGene(){
+        int[] genePool = new int[8];
+        for(int i=0; i<8; i++) genePool[i] = 0;
+        for(Animal animal : animals){
+            int[] genes = animal.getGenes().getGenePool();
+            for(int i=0; i<8; i++){
+                genePool[i] += genes[i];
+            }
+        }
+        int mostCommonGene = 0;
+        int maxOccurenceSoFar = 0;
+        for(int i=0; i<8; i++){
+            if(genePool[i] > maxOccurenceSoFar){
+                mostCommonGene = i;
+                maxOccurenceSoFar = genePool[i];
+            }
+        }
+        StringBuilder str = new StringBuilder();
+        str.append(mostCommonGene);
+        str.append(" (");
+        str.append(Rotation.intToRotate(mostCommonGene).toString());
+        str.append(")");
+        return str.toString();
     }
 }

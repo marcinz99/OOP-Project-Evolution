@@ -1,4 +1,6 @@
 package evolution;
+import com.sun.security.jgss.GSSUtil;
+
 import java.util.Random;
 
 public class Genome {
@@ -27,6 +29,14 @@ public class Genome {
         str.append("Genome:");
         for(Integer gene : motorChromosome){
             str.append(" " + gene.toString() + ",");
+        }
+        return str.toString();
+    }
+    public String toStringCondensed(){
+        StringBuilder str = new StringBuilder();
+        str.append("Genome: ");
+        for(Integer gene : motorChromosome){
+            str.append(gene.toString());
         }
         return str.toString();
     }
@@ -67,5 +77,50 @@ public class Genome {
             }
         }
         return resultGenome;
+    }
+    public long hashed(){
+        int[] numOfEachMove = new int[8];
+        for(int i=0; i<8; i++){
+            numOfEachMove[i] = 0;
+        }
+        for(int i=0; i<32; i++){
+            numOfEachMove[motorChromosome[i]]++;
+        }
+        long hashed = 0;
+        for(int i=0; i<8; i++){
+            hashed *= 25;
+            hashed += numOfEachMove[i];
+        }
+        return hashed;
+    }
+    public static String hashedToHTML(long hashed){
+        int[] numOfEachMove = new int[8];
+        for(int i=7; i>=0; i--){
+            numOfEachMove[i] = (int) (hashed % 25);
+            hashed /= 25;
+        }
+        int[] restoredGenome = new int[32];
+        for(int i=0, j=0; i<8; i++){
+            while(numOfEachMove[i]-- > 0){
+                restoredGenome[j++] = i;
+            }
+        }
+        StringBuilder str = new StringBuilder();
+        str.append("<html>");
+        for(int i=0; i<4; i++){
+            for(int j=0; j<8; j++){
+                str.append(String.format("%d ", restoredGenome[i*8+j]));
+            } str.append("<br/>");
+        } str.append("</html>");
+
+        return str.toString();
+    }
+    public int[] getGenePool(){
+        int[] genePool = new int[8];
+        for(int i=0; i<8; i++) genePool[i] = 0;
+        for(int i=0; i<32; i++){
+            genePool[motorChromosome[i]]++;
+        }
+        return genePool;
     }
 }

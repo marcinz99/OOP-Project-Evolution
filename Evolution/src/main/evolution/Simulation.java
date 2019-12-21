@@ -8,6 +8,7 @@ public class Simulation {
     private Window wnd;
     private boolean isRunning = false;
     private int day_no = 1;
+    private int daysByOneStep = 1;
     private Changes latestPositions = new Changes();
 
     public Simulation(Parameters param, Window wnd){
@@ -17,10 +18,28 @@ public class Simulation {
         this.map.initiateChangelist(latestPositions);
         Window.updateNumberOfAnimals(wnd, map.getNumberOfAnimals());
         Window.updateNumberOfPlants(wnd, map.getNumberOfPlants());
+        Window.updateAvgStamina(wnd, map.getAverageStamina(), map.getMinReproductiveStamina());
+        Window.updateAverageFertility(wnd, map.getAverageFertility());
+        Window.updateMostCommonGene(wnd, map.getMostCommonGene());
+        Window.updateMostCommonGenome(wnd, Genome.hashedToHTML(map.getMostCommonGenome()));
     }
-    public void procedeNDays(int n){
-        if(isRunning) return;
-        for(int i=0; i<n; i++){
+    public void startStopSimulation(){
+        isRunning = !isRunning;
+        if(isRunning){
+            Thread runTheSim = new Thread(this::playSimulation);
+            runTheSim.start();
+        }
+    }
+    public void playSimulation(){
+        wait(80);
+        while(isRunning){
+            procedeNDays();
+            wait(150);
+            wnd.setVisible(true);
+        }
+    }
+    public void procedeNDays(){
+        for(int i=0; i<daysByOneStep; i++){
             procedeOneDay();
             day_no++;
         }
@@ -28,6 +47,10 @@ public class Simulation {
         map.restoreNumberOfPlants();
         Window.updateNumberOfAnimals(wnd, map.getNumberOfAnimals());
         Window.updateNumberOfPlants(wnd, map.getNumberOfPlants());
+        Window.updateAvgStamina(wnd, map.getAverageStamina(), map.getMinReproductiveStamina());
+        Window.updateAverageFertility(wnd, map.getAverageFertility());
+        Window.updateMostCommonGene(wnd, map.getMostCommonGene());
+        Window.updateMostCommonGenome(wnd, Genome.hashedToHTML(map.getMostCommonGenome()));
         Window.defaultStatView(wnd);
     }
     public void procedeOneDay(){
@@ -45,6 +68,13 @@ public class Simulation {
     public void somethingDisappeared(Vector2d vec){
         Window.somethingDisappeared(wnd, vec.x, vec.y);
     }
+    public void setAnimationRate(int n){
+        daysByOneStep = n;
+    }
+    public boolean isRunning() {
+        return isRunning;
+    }
+
     public String getContentHere(int x, int y){
         StringBuilder str = new StringBuilder();
         str.append("<html>");
@@ -114,6 +144,16 @@ public class Simulation {
         }
         for(int i=0; i<futureParents.size(); i+=2){
             map.giveBirthToNewAnimal(latestPositions, futureParents.get(i), futureParents.get(i+1));
+            futureParents.get(i).justBecameParent();
+            futureParents.get(i+1).justBecameParent();
+        }
+    }
+    private void wait(int miliseconds){
+        try{
+            Thread.sleep(miliseconds);
+        }
+        catch(InterruptedException ex) {
+            Thread.currentThread().interrupt();
         }
     }
 }

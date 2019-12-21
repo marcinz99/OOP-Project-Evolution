@@ -6,6 +6,7 @@ public class Animal extends AbstractWorldElement {
     private AbstractWorldMap map;
     private int stamina;
     private Genome genes;
+    private int juvenileNum = 0;
 
     public Animal(FinalMap map, Vector2d position, int stamina, Genome genes){
         this.map = map;
@@ -60,8 +61,11 @@ public class Animal extends AbstractWorldElement {
         this.position = targetMove;
     }
     public String toStringVerbose(){
-        return String.format("ID(%d), HP(%d/%d), ORI(%s)",
-                id, stamina, ((FinalMap) map).getMinReproductiveStamina(),  orientation.toString());
+        StringBuilder str = new StringBuilder();
+        str.append(String.format("ID(%d), HP(%d/%d), ORI(%s)<br/>> ",
+                id, stamina, ((FinalMap) map).getMinReproductiveStamina(),  orientation.toString()));
+        str.append(genes.toStringCondensed());
+        return str.toString();
     }
     public String toString(){
         return String.format("[(%d, %d) - %s]", position.x, position.y, orientation.toString());
@@ -77,5 +81,11 @@ public class Animal extends AbstractWorldElement {
     }
     public void eatPlant(int stm){
         stamina += stm;
+    }
+    public void justBecameParent(){
+        juvenileNum++;
+    }
+    public int getJuvenileNum(){
+        return juvenileNum;
     }
 }

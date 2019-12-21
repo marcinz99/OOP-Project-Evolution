@@ -4,12 +4,14 @@ import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Locale;
 
 public class Window extends JFrame {
     private static Color c_animal = new Color(209, 106, 33);
     private static Color c_plant = new Color(112, 184, 0);
     private static Color c_ground = new Color(225, 204, 58);
     private static Color c_info = new Color(232, 240, 223);
+    private static Color c_info_clicked = new Color(196, 209, 182);
     private static ImageIcon BASE_i_animal = new ImageIcon("src\\img\\animal.png");
     private static ImageIcon BASE_i_plant = new ImageIcon("src\\img\\plant.png");
     private static ImageIcon BASE_i_ground = new ImageIcon("src\\img\\ground.png");
@@ -20,13 +22,14 @@ public class Window extends JFrame {
     private int height;
     private int cellDim;
     private int infoX_px;
-    private int infoY_cells;
+    private int infoY_px;
     private JButton[][] cells;
     private JButton[] infos;
 
     public static void runTheWindowSimulation(Parameters param){
         Window wnd = new Window(param.width, param.height);
         JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
         wnd.add(panel);
         addComponents(wnd, panel);
         wnd.setVisible(true);
@@ -66,57 +69,123 @@ public class Window extends JFrame {
             }
         }
 
-        this.infoX_px = Toolkit.getDefaultToolkit().getScreenSize().width - this.width * this.cellDim - 200;
-        this.infoY_cells = Math.floorDiv(50, this.cellDim) + 1;
+        this.infoX_px = (Toolkit.getDefaultToolkit().getScreenSize().width - this.width * this.cellDim - 200)/6;
+        this.infoY_px = 55;
 
         Border whiteline = BorderFactory.createLineBorder(Color.white);
-        this.infos = new JButton[9];
-        for(int i=0; i<9; i++){
+        this.infos = new JButton[23];
+
+        for(int i=0; i<23; i++){
             infos[i] = new JButton();
             infos[i].setFont(new Font("Consolas", Font.PLAIN, 22));
-            infos[i].setPreferredSize(new Dimension(this.infoX_px,0));
             infos[i].setBorder(whiteline);
             infos[i].setBackground(c_info);
-        }
+        } infos[4].setBackground(c_info_clicked);
+
+        infos[0].setPreferredSize(new Dimension(5*this.infoX_px, 1*this.infoY_px));
+        infos[1].setPreferredSize(new Dimension(1*this.infoX_px, 1*this.infoY_px));
+        for(int i=2; i<=7; i++)
+            infos[i].setPreferredSize(new Dimension(1*this.infoX_px, 1*this.infoY_px));
+        for(int i=8; i<=19; i++)
+            infos[i].setPreferredSize(new Dimension(3*this.infoX_px, 1*this.infoY_px));
+        infos[20].setPreferredSize(new Dimension(3*this.infoX_px, 3*this.infoY_px));
+        infos[21].setPreferredSize(new Dimension(3*this.infoX_px, 3*this.infoY_px));
+        infos[22].setPreferredSize(new Dimension(6*this.infoX_px, 6*this.infoY_px));
     }
     private static void addComponents(Window wnd, JPanel panel){
-        panel.setLayout(new GridBagLayout());
+        JPanel controls = new JPanel(new GridBagLayout());
+        panel.add(controls);
+        JPanel scene = new JPanel(new GridBagLayout());
+        panel.add(scene);
+
         GridBagConstraints layoutConstraints = new GridBagConstraints();
+        layoutConstraints.fill = GridBagConstraints.HORIZONTAL;
 
         layoutConstraints.gridx = 0;
+        layoutConstraints.gridy = 0;
+        layoutConstraints.gridwidth = 5;
+        layoutConstraints.gridheight = 1;
+        controls.add(wnd.infos[0], layoutConstraints);
+
+        layoutConstraints.gridx = 5;
+        layoutConstraints.gridy = 0;
         layoutConstraints.gridwidth = 1;
         layoutConstraints.gridheight = 1;
-        layoutConstraints.fill = GridBagConstraints.VERTICAL;
-        for(int i=0; i<8; i++){
-            layoutConstraints.gridy = i;
-            panel.add(wnd.infos[i], layoutConstraints);
-        }
-        layoutConstraints.gridheight = 2 * wnd.infoY_cells;
-        layoutConstraints.gridy = 8;
-        panel.add(wnd.infos[8], layoutConstraints);
+        controls.add(wnd.infos[1], layoutConstraints);
 
-        JScrollPane scroller = new JScrollPane(wnd.infos[8]);
-        scroller.setBorder(null);
-        scroller.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        panel.add(scroller, layoutConstraints);
+        for(int i=2; i<=7; i++){
+            layoutConstraints.gridx = i-2;
+            layoutConstraints.gridy = 1;
+            layoutConstraints.gridwidth = 1;
+            layoutConstraints.gridheight = 1;
+            controls.add(wnd.infos[i], layoutConstraints);
+        }
+
+        layoutConstraints.gridwidth = 3;
+        layoutConstraints.gridheight = 1;
+        for(int i=1; i<=6; i++){
+            layoutConstraints.gridx = 0;
+            layoutConstraints.gridy = i+1;
+            controls.add(wnd.infos[2*i+6], layoutConstraints);
+
+            layoutConstraints.gridx = 3;
+            layoutConstraints.gridy = i+1;
+            controls.add(wnd.infos[2*i+7], layoutConstraints);
+        }
+
+        layoutConstraints.gridx = 0;
+        layoutConstraints.gridy = 8;
+        layoutConstraints.gridwidth = 3;
+        layoutConstraints.gridheight = 1;
+        controls.add(wnd.infos[20], layoutConstraints);
+
+        layoutConstraints.gridx = 3;
+        layoutConstraints.gridy = 8;
+        layoutConstraints.gridwidth = 3;
+        layoutConstraints.gridheight = 1;
+        controls.add(wnd.infos[21], layoutConstraints);
+
+        layoutConstraints.gridx = 0;
+        layoutConstraints.gridy = 9;
+        layoutConstraints.gridwidth = 6;
+        layoutConstraints.gridheight = 1;
+        controls.add(wnd.infos[22], layoutConstraints);
 
         wnd.infos[0].setText("EVOLUTION SIM");
-        wnd.infos[1].setText("Day no: 1");
-        wnd.infos[2].setText("Number of animals:");
-        wnd.infos[3].setText("Number of plants:");
-        wnd.infos[4].setText("+1 DAY");
-        wnd.infos[5].setText("+7 DAYS");
-        wnd.infos[6].setText("+30 DAYS");
-        wnd.infos[7].setText("+100 DAYS");
+        wnd.infos[1].setText("SETUP");
+        wnd.infos[2].setText("PLAY");
+        wnd.infos[3].setText("PROCEDE");
+        wnd.infos[4].setText("1");
+        wnd.infos[5].setText("7");
+        wnd.infos[6].setText("30");
+        wnd.infos[7].setText("100");
+        wnd.infos[8].setText("Day no:");
+        wnd.infos[9].setText("1");
+        wnd.infos[10].setText("Number of animals:");
+        wnd.infos[11].setText("");
+        wnd.infos[12].setText("Number of plants:");
+        wnd.infos[13].setText("");
+        wnd.infos[14].setText("Avg stamina:");
+        wnd.infos[15].setText("");
+        wnd.infos[16].setText("Avg fertility rate:");
+        wnd.infos[17].setText("");
+        wnd.infos[18].setText("Most common gene:");
+        wnd.infos[19].setText("");
+        wnd.infos[20].setText("Most common genotype:");
+        wnd.infos[21].setText("");
+        wnd.infos[22].setText("Darwin was right!");
+
         defaultStatView(wnd);
+
+        layoutConstraints = new GridBagConstraints();
 
         for(int i=0; i<wnd.width; i++){
             for(int j=0; j<wnd.height; j++){
-                layoutConstraints.gridx = i+1;
+                layoutConstraints.gridx = i;
                 layoutConstraints.gridy = j;
                 layoutConstraints.gridwidth = 1;
                 layoutConstraints.gridheight = 1;
-                panel.add(wnd.cells[i][j], layoutConstraints);
+                scene.add(wnd.cells[i][j], layoutConstraints);
             }
         }
     }
@@ -128,35 +197,65 @@ public class Window extends JFrame {
                 wnd.cells[i][j].addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        wnd.infos[8].setText(sim.getContentHere(finalI, finalJ));
+                        wnd.infos[22].setText(sim.getContentHere(finalI, finalJ));
                     }
                 });
             }
         }
     }
     private static void addActionListeners(Window wnd, Simulation sim){
+        wnd.infos[2].addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(sim.isRunning()) wnd.infos[2].setText("START");
+                else wnd.infos[2].setText("STOP");
+                sim.startStopSimulation();
+            }
+        });
+        wnd.infos[3].addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                sim.procedeNDays();
+            }
+        });
         wnd.infos[4].addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                sim.procedeNDays(1);
+                wnd.infos[4].setBackground(c_info_clicked);
+                wnd.infos[5].setBackground(c_info);
+                wnd.infos[6].setBackground(c_info);
+                wnd.infos[7].setBackground(c_info);
+                sim.setAnimationRate(1);
             }
         });
         wnd.infos[5].addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                sim.procedeNDays(7);
+                wnd.infos[4].setBackground(c_info);
+                wnd.infos[5].setBackground(c_info_clicked);
+                wnd.infos[6].setBackground(c_info);
+                wnd.infos[7].setBackground(c_info);
+                sim.setAnimationRate(7);
             }
         });
         wnd.infos[6].addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                sim.procedeNDays(30);
+                wnd.infos[4].setBackground(c_info);
+                wnd.infos[5].setBackground(c_info);
+                wnd.infos[6].setBackground(c_info_clicked);
+                wnd.infos[7].setBackground(c_info);
+                sim.setAnimationRate(30);
             }
         });
         wnd.infos[7].addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                sim.procedeNDays(100);
+                wnd.infos[4].setBackground(c_info);
+                wnd.infos[5].setBackground(c_info);
+                wnd.infos[6].setBackground(c_info);
+                wnd.infos[7].setBackground(c_info_clicked);
+                sim.setAnimationRate(100);
             }
         });
     }
@@ -170,15 +269,27 @@ public class Window extends JFrame {
         wnd.cells[x][y].setIcon(wnd.i_ground);
     }
     public static void updateDayNo(Window wnd, int n){
-        wnd.infos[1].setText("Day no: " + n);
+        wnd.infos[9].setText(String.valueOf(n));
     }
     public static void updateNumberOfAnimals(Window wnd, int n){
-        wnd.infos[2].setText("Number of animals: " + n);
+        wnd.infos[11].setText(String.valueOf(n));
     }
     public static void updateNumberOfPlants(Window wnd, int n){
-        wnd.infos[3].setText("Number of plants: " + n);
+        wnd.infos[13].setText(String.valueOf(n));
+    }
+    public static void updateAvgStamina(Window wnd, float avgStm, int reproductiveMin){
+        wnd.infos[15].setText(String.format(Locale.US,"%.2f / %d", avgStm, reproductiveMin));
+    }
+    public static void updateAverageFertility(Window wnd, float avgFert){
+        wnd.infos[17].setText(String.format(Locale.US,"%.2f", avgFert));
+    }
+    public static void updateMostCommonGene(Window wnd, String str){
+        wnd.infos[19].setText(str);
+    }
+    public static void updateMostCommonGenome(Window wnd, String str){
+        wnd.infos[21].setText(str);
     }
     public static void defaultStatView(Window wnd) {
-        wnd.infos[8].setText("Info bar");
+        wnd.infos[22].setText("Ya see? Darwin was right!");
     }
 }
