@@ -9,6 +9,8 @@ public class Simulation {
     private boolean isRunning = false;
     private int day_no = 1;
     private int daysByOneStep = 1;
+    private int simDelay = 150;
+    private boolean isTrackingOn = false;
     private Changes latestPositions = new Changes();
 
     public Simulation(Parameters param, Window wnd){
@@ -34,7 +36,7 @@ public class Simulation {
         wait(80);
         while(isRunning){
             procedeNDays();
-            wait(150);
+            wait(simDelay);
             wnd.setVisible(true);
         }
     }
@@ -68,6 +70,12 @@ public class Simulation {
     public void somethingDisappeared(Vector2d vec){
         Window.somethingDisappeared(wnd, vec.x, vec.y);
     }
+    public void markDominants(){
+        map.markDominants();
+    }
+    public void markAsDominant(Vector2d vec){
+        Window.markAsDominant(wnd, vec.x, vec.y);
+    }
     public void setAnimationRate(int n){
         daysByOneStep = n;
     }
@@ -94,9 +102,15 @@ public class Simulation {
         str.append("</html>");
         return str.toString();
     }
+    public Animal getStrongest(Vector2d vec){
+        ArrayList<Animal> animals = latestPositions.getAnimalsAt(vec);
+        if(animals != null) return animals.get(0);
+        else return null;
+    }
     private void handleEvents(){
         for(Vector2d pos : latestPositions.getPositions()){
             ArrayList<Animal> animals = latestPositions.getAnimalsAt(pos);
+
             int numOfAnims = animals.size();
             for(Animal animal : animals){
                 if(animal.getStamina() <= 0){
@@ -116,6 +130,19 @@ public class Simulation {
             map.occupyLocation(pos);
             animalAppearedOn(pos);
             ArrayList<Animal> animals = latestPositions.getAnimalsAt(pos);
+
+            Animal strongest = animals.get(0);
+            if(strongest.getStamina() < map.getMinReproductiveStamina()/4){
+                Window.markAsHungry(wnd, strongest.position.x, strongest.position.y);
+            }
+            if(isTrackingOn){
+                if(strongest.getTrackingNum() == 1){
+                    Window.markAsTracked(wnd, strongest.position.x, strongest.position.y);
+                }
+                if(strongest.getTrackingNum() == 2){
+                    Window.markAsDescendant(wnd, strongest.position.x, strongest.position.y);
+                }
+            }
             if(map.isPlantHere(pos.x, pos.y)){
                 map.getRidOfPlant(pos.x, pos.y);
                 ArrayList<Animal> theStrongest = new ArrayList<>();
@@ -155,5 +182,20 @@ public class Simulation {
         catch(InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
+    }
+    public int getPlantEnergy(){
+        return param.plantEnergy;
+    }
+    public void changePlantEnergy(int newPlantEnergy){
+        param.plantEnergy = newPlantEnergy;
+    }
+    public int getSimDelay(){
+        return simDelay;
+    }
+    public void changeSimDelay(int newSimDelay){
+        simDelay = newSimDelay;
+    }
+    public void turnTrackingOn(){
+        isTrackingOn = true;
     }
 }

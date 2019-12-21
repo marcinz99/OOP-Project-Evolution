@@ -94,6 +94,7 @@ public class Genome {
         return hashed;
     }
     public static String hashedToHTML(long hashed){
+        if(hashed == 0) return "None";
         int[] numOfEachMove = new int[8];
         for(int i=7; i>=0; i--){
             numOfEachMove[i] = (int) (hashed % 25);

@@ -5,7 +5,7 @@ import java.util.HashMap;
 public class Main {
     public static void main(String args[]){
         try{
-            Window.runTheWindowSimulation(new Parameters());
+            MainWindow.showMainWindow();
         }
         catch(Exception ex){
             System.out.println(ex.getMessage());

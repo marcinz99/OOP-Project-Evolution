@@ -7,6 +7,7 @@ public class Animal extends AbstractWorldElement {
     private int stamina;
     private Genome genes;
     private int juvenileNum = 0;
+    private int isToBeTracked = 0;
 
     public Animal(FinalMap map, Vector2d position, int stamina, Genome genes){
         this.map = map;
@@ -81,11 +82,22 @@ public class Animal extends AbstractWorldElement {
     }
     public void eatPlant(int stm){
         stamina += stm;
+        int maxStamina = 10 * ((FinalMap) map).getMinReproductiveStamina();
+        if(stamina > maxStamina) stamina = maxStamina;
     }
     public void justBecameParent(){
         juvenileNum++;
     }
     public int getJuvenileNum(){
         return juvenileNum;
+    }
+    public void setToBeTracked(){
+        isToBeTracked = 1;
+    }
+    public void setToBeDescendant(){
+        isToBeTracked = 2;
+    }
+    public int getTrackingNum(){
+        return isToBeTracked;
     }
 }

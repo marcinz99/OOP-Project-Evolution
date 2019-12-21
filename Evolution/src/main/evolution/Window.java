@@ -7,22 +7,32 @@ import java.awt.event.ActionListener;
 import java.util.Locale;
 
 public class Window extends JFrame {
-    private static Color c_animal = new Color(209, 106, 33);
-    private static Color c_plant = new Color(112, 184, 0);
-    private static Color c_ground = new Color(225, 204, 58);
     private static Color c_info = new Color(232, 240, 223);
     private static Color c_info_clicked = new Color(196, 209, 182);
+    private static Color c_area = new Color(115, 157, 52);
     private static ImageIcon BASE_i_animal = new ImageIcon("src\\img\\animal.png");
+    private static ImageIcon BASE_i_animal_D = new ImageIcon("src\\img\\animal_D.png");
+    private static ImageIcon BASE_i_animal_H = new ImageIcon("src\\img\\animal_H.png");
+    private static ImageIcon BASE_i_animal_T = new ImageIcon("src\\img\\animal_T.png");
+    private static ImageIcon BASE_i_animal_J = new ImageIcon("src\\img\\animal_J.png");
     private static ImageIcon BASE_i_plant = new ImageIcon("src\\img\\plant.png");
     private static ImageIcon BASE_i_ground = new ImageIcon("src\\img\\ground.png");
+    private static ImageIcon BASE_i_settings = new ImageIcon("src\\img\\settings.png");
     private ImageIcon i_animal;
+    private ImageIcon i_animal_D;
+    private ImageIcon i_animal_H;
+    private ImageIcon i_animal_T;
+    private ImageIcon i_animal_J;
     private ImageIcon i_plant;
     private ImageIcon i_ground;
+    private ImageIcon i_settings;
     private int width;
     private int height;
     private int cellDim;
     private int infoX_px;
     private int infoY_px;
+    private boolean isSettingWindowOn = false;
+    private Vector2d focus = null;
     private JButton[][] cells;
     private JButton[] infos;
 
@@ -53,6 +63,10 @@ public class Window extends JFrame {
         if(cellDim * height > Toolkit.getDefaultToolkit().getScreenSize().height - 28) this.cellDim--;
 
         this.i_animal = new ImageIcon(BASE_i_animal.getImage().getScaledInstance(cellDim, cellDim, Image.SCALE_SMOOTH));
+        this.i_animal_D = new ImageIcon(BASE_i_animal_D.getImage().getScaledInstance(cellDim, cellDim, Image.SCALE_SMOOTH));
+        this.i_animal_H = new ImageIcon(BASE_i_animal_H.getImage().getScaledInstance(cellDim, cellDim, Image.SCALE_SMOOTH));
+        this.i_animal_T = new ImageIcon(BASE_i_animal_T.getImage().getScaledInstance(cellDim, cellDim, Image.SCALE_SMOOTH));
+        this.i_animal_J = new ImageIcon(BASE_i_animal_J.getImage().getScaledInstance(cellDim, cellDim, Image.SCALE_SMOOTH));
         this.i_plant = new ImageIcon(BASE_i_plant.getImage().getScaledInstance(cellDim, cellDim, Image.SCALE_SMOOTH));
         this.i_ground = new ImageIcon(BASE_i_ground.getImage().getScaledInstance(cellDim, cellDim, Image.SCALE_SMOOTH));
 
@@ -91,12 +105,19 @@ public class Window extends JFrame {
         infos[20].setPreferredSize(new Dimension(3*this.infoX_px, 3*this.infoY_px));
         infos[21].setPreferredSize(new Dimension(3*this.infoX_px, 3*this.infoY_px));
         infos[22].setPreferredSize(new Dimension(6*this.infoX_px, 6*this.infoY_px));
+
+        i_settings = new ImageIcon(BASE_i_settings.getImage().getScaledInstance(
+                5*this.infoY_px/7, 5*this.infoY_px/7, Image.SCALE_SMOOTH));
+        infos[1].setBorder(whiteline);
+        infos[1].setIcon(i_settings);
     }
     private static void addComponents(Window wnd, JPanel panel){
         JPanel controls = new JPanel(new GridBagLayout());
         panel.add(controls);
         JPanel scene = new JPanel(new GridBagLayout());
         panel.add(scene);
+        controls.setBackground(c_area);
+        scene.setBackground(c_area);
 
         GridBagConstraints layoutConstraints = new GridBagConstraints();
         layoutConstraints.fill = GridBagConstraints.HORIZONTAL;
@@ -152,7 +173,6 @@ public class Window extends JFrame {
         controls.add(wnd.infos[22], layoutConstraints);
 
         wnd.infos[0].setText("EVOLUTION SIM");
-        wnd.infos[1].setText("SETUP");
         wnd.infos[2].setText("PLAY");
         wnd.infos[3].setText("PROCEDE");
         wnd.infos[4].setText("1");
@@ -198,15 +218,28 @@ public class Window extends JFrame {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         wnd.infos[22].setText(sim.getContentHere(finalI, finalJ));
+                        wnd.focus = new Vector2d(finalI, finalJ);
                     }
                 });
             }
         }
     }
     private static void addActionListeners(Window wnd, Simulation sim){
+        wnd.infos[1].addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(sim.isRunning()){
+                    wnd.infos[2].setText("START");
+                    sim.startStopSimulation();
+                }
+                wnd.isSettingWindowOn = true;
+                SettingsWindow.showSettingsWindow(wnd, sim);
+            }
+        });
         wnd.infos[2].addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                if(wnd.isSettingWindowOn) return;
                 if(sim.isRunning()) wnd.infos[2].setText("START");
                 else wnd.infos[2].setText("STOP");
                 sim.startStopSimulation();
@@ -215,6 +248,7 @@ public class Window extends JFrame {
         wnd.infos[3].addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                if(wnd.isSettingWindowOn) return;
                 sim.procedeNDays();
             }
         });
@@ -268,6 +302,18 @@ public class Window extends JFrame {
     public static void somethingDisappeared(Window wnd, int x, int y){
         wnd.cells[x][y].setIcon(wnd.i_ground);
     }
+    public static void markAsDominant(Window wnd, int x, int y){
+        wnd.cells[x][y].setIcon(wnd.i_animal_D);
+    }
+    public static void markAsHungry(Window wnd, int x, int y){
+        wnd.cells[x][y].setIcon(wnd.i_animal_H);
+    }
+    public static void markAsTracked(Window wnd, int x, int y){
+        wnd.cells[x][y].setIcon(wnd.i_animal_T);
+    }
+    public static void markAsDescendant(Window wnd, int x, int y){
+        wnd.cells[x][y].setIcon(wnd.i_animal_J);
+    }
     public static void updateDayNo(Window wnd, int n){
         wnd.infos[9].setText(String.valueOf(n));
     }
@@ -291,5 +337,15 @@ public class Window extends JFrame {
     }
     public static void defaultStatView(Window wnd) {
         wnd.infos[22].setText("Ya see? Darwin was right!");
+        wnd.focus = null;
+    }
+    public static void closedSettingsWindow(Window wnd){
+        wnd.isSettingWindowOn = false;
+    }
+    public static void terminateSimulation(Window wnd){
+        wnd.dispose();
+    }
+    public static Vector2d getFocus(Window wnd){
+        return wnd.focus;
     }
 }

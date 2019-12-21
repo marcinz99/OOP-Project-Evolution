@@ -146,6 +146,7 @@ public class FinalMap extends AbstractWorldMap {
         return moveCost;
     }
     public float getAverageFertility(){
+        if(animals.isEmpty()) return (float) 0.0;
         int totalFertility = 0;
         for(Animal animal : animals){
             totalFertility += animal.getJuvenileNum();
@@ -153,6 +154,7 @@ public class FinalMap extends AbstractWorldMap {
         return (float) totalFertility / animals.size();
     }
     public float getAverageStamina(){
+        if(animals.isEmpty()) return (float) 0.0;
         int totalStamina = 0;
         for(Animal animal : animals){
             totalStamina += animal.getStamina();
@@ -179,6 +181,9 @@ public class FinalMap extends AbstractWorldMap {
         int newbornStamina = p1 + p2;
         Genome newbornGenes = Genome.mixGenes(parent1.getGenes(), parent2.getGenes());
         Animal animal = new Animal(this, birthPos, newbornStamina, newbornGenes);
+        if(parent1.getTrackingNum() != 0 || parent2.getTrackingNum() != 0){
+            animal.setToBeDescendant();
+        }
         animals.add(animal);
         if(birthPos.follows(jungleBottomLeft) && birthPos.precedes(jungleUpperRight)){
             freeSpacesInJungle.delete(birthPos);
@@ -222,6 +227,7 @@ public class FinalMap extends AbstractWorldMap {
         return mostCommonGenomeHashed;
     }
     public String getMostCommonGene(){
+        if(animals.isEmpty()) return "None";
         int[] genePool = new int[8];
         for(int i=0; i<8; i++) genePool[i] = 0;
         for(Animal animal : animals){
@@ -244,5 +250,13 @@ public class FinalMap extends AbstractWorldMap {
         str.append(Rotation.intToRotate(mostCommonGene).toString());
         str.append(")");
         return str.toString();
+    }
+    public void markDominants(){
+        long hashed = getMostCommonGenome();
+        for(Animal animal : animals){
+            if(animal.getGenes().hashed() == hashed){
+                sim.markAsDominant(animal.position);
+            }
+        }
     }
 }
